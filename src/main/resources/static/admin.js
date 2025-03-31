@@ -120,31 +120,51 @@ function saveProject() {
     const id = document.getElementById("projectId").value;
     const project = {
         name: document.getElementById("projectName").value.trim(),
-        requiredSkills: document.getElementById("requiredSkills").value.trim() ? document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim()) : []
+        requiredSkills: document.getElementById("requiredSkills").value.trim() ?
+            document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim()) : [] // If no skills are provided, send an empty array
     };
 
     const method = id ? "PUT" : "POST";
-    const url = id ? `http://localhost:9091/projects/update/${id}` : "http://localhost:9091/projects";
+    const url = id ? `http://localhost:9091/projects/update/${id}` : "http://localhost:9091/projects/add";
 
     fetch(url, {
-        method: method,
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(project)
-    }).then(() => {
-        alert(id ? "Project Updated" : "Project Added");
-        fetchProjects();
-        document.getElementById("projectFormContainer").style.display = "none";
-    });
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(project)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Server error: ' + response.statusText);
+            }
+            return response.json(); // Parse the JSON response
+        })
+        .then(data => {
+            alert(id ? "Project Updated" : "Project Added");
+            fetchProjects(); // Re-fetch the project list after adding/updating
+            document.getElementById("projectFormContainer").style.display = "none";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("There was an error processing your request.");
+        });
 }
 
+
 function editProject(id, name, requiredSkills) {
+    console.log("Edit Project Clicked:", id, name, requiredSkills); // Debugging line
+
+    // Ensure requiredSkills is an array before calling .join()
+    let skillsArray = Array.isArray(requiredSkills) ? requiredSkills : (typeof requiredSkills === "string" ? requiredSkills.split(",") : []);
+
     document.getElementById("projectId").value = id;
     document.getElementById("projectName").value = name;
-    document.getElementById("requiredSkills").value = requiredSkills.join(", ");
+    document.getElementById("requiredSkills").value = skillsArray.join(", ");
+
     document.getElementById("projectFormContainer").style.display = "block";
 }
+
 
 function deleteProject(id) {
     if (confirm("Are you sure you want to delete this project?")) {
