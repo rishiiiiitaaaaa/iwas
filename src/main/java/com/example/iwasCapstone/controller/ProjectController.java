@@ -27,13 +27,15 @@ public class ProjectController {
     private final ProjectRepository projectRepository;
   
 //add a project
-    @PostMapping
-    public ResponseEntity<Project> addProject(@RequestBody Project project) {
-        if (project.getName() == null || project.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
-        }
-        return ResponseEntity.ok(projectRepository.save(project));
+@PostMapping
+public ResponseEntity<Project> addProject(@RequestBody Project project) {
+    if (project.getName() == null || project.getName().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(null);
     }
+    return ResponseEntity.ok(projectRepository.save(project));
+}
+
+
     //get all project
     @GetMapping
     public ResponseEntity<List<Project>> getAllProjects() {
