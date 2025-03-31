@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - IWAS</title>
+    <link rel="stylesheet" href="iwas.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        <form id="registerForm">
+            <input type="text" id="name" placeholder="Full Name" required>
+            <input type="email" id="email" placeholder="Company Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            <select id="role">
+                <option value="EMPLOYEE">Employee</option>
+                <option value="ADMIN">Admin</option>
+            </select>
+            <button type="submit" id="registerButton">Register</button>
+        </form>
+        <p id="registerMessage"></p>
+        <p>Already have an account? <a href="loginCap.html">Login here</a></p>
+    </div>
+    <script src="iwas.js"></script>
+</body>
+
+</html>

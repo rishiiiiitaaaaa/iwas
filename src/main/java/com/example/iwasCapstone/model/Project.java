@@ -1,6 +1,8 @@
 package com.example.iwasCapstone.model;
-import java.time.LocalDateTime;
+
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -9,19 +11,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "project")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class Project {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,10 +23,53 @@ public class Project {
     @Column(nullable = false)
     private String name;
 
-    @ElementCollection
-    @Column(name = "required_skills")
+    @JsonProperty("requiredSkills")
+    @ElementCollection // Handles arrays like `{Java, React}`
     private List<String> requiredSkills;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "\"completion time (days)\"", nullable = false)
+private Integer completionTime;
+
+    // Constructors
+    public Project() {}
+
+    public Project(Long id, String name, List<String> requiredSkills, Integer completionTime) {
+        this.id = id;
+        this.name = name;
+        this.requiredSkills = requiredSkills;
+        this.completionTime = completionTime;
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getRequiredSkills() {
+        return requiredSkills;
+    }
+
+    public void setRequiredSkills(List<String> requiredSkills) {
+        this.requiredSkills = requiredSkills;
+    }
+
+    public Integer getCompletionTime() {
+        return completionTime;
+    }
+
+    public void setCompletionTime(Integer completionTime) {
+        this.completionTime = completionTime;
+    }
 }

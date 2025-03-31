@@ -1,0 +1,177 @@
+/* General Styles */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+
+/* Navbar Styles */
+
+.navbar {
+    background-color: #333;
+    color: white;
+    padding: 10px 0;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    /* Align items in one line */
+    gap: 20px;
+    /* Add spacing between items */
+    padding: 0;
+    margin: 0;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    padding: 10px 15px;
+}
+
+.logout-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.navbar-container {
+    width: 80%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-links {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+.navbar-links li {
+    margin: 0 15px;
+}
+
+.navbar-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.navbar-links li a:hover {
+    text-decoration: underline;
+}
+
+
+/* Dashboard Container Styles */
+
+.dashboard-container {
+    width: 80%;
+    margin: 20px auto;
+}
+
+
+/* Profile Section Styles */
+
+.profile-info {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.profile-info p {
+    margin: 10px 0;
+}
+
+#editProfileBtn {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#editProfileBtn:hover {
+    background-color: #45a049;
+}
+
+
+/* Modal Styles */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 5px;
+    width: 400px;
+    margin: 0 auto;
+}
+
+.modal .close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+
+/* Leave Request Section Styles */
+
+.leave-section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.leave-section h3 {
+    margin-top: 20px;
+}
+
+#leaveRequestsTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#leaveRequestsTable th,
+#leaveRequestsTable td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+#leaveRequestsTable th {
+    background-color: #f2f2f2;
+}
