@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("saveEmployeeButton").addEventListener("click", saveEmployee);
     document.getElementById("saveProjectButton").addEventListener("click", saveProject);
 });
-
+//function to fetch all employees
 function fetchEmployees() {
     fetch("http://localhost:9091/employees")
         .then(response => response.json())
@@ -36,7 +36,7 @@ function fetchEmployees() {
             });
         });
 }
-
+//function for saving employee (used in update , add feature)
 function saveEmployee() {
     const id = document.getElementById("employeeId").value;
     const skillsValue = document.getElementById("skills").value.trim();
@@ -68,7 +68,7 @@ function saveEmployee() {
         document.getElementById("employeeFormContainer").style.display = "none";
     }).catch(error => console.error("Error saving employee:", error));
 }
-
+//used in update 
 function editEmployee(id, name, email, role, skills) {
     document.getElementById("employeeId").value = id;
     document.getElementById("name").value = name;
@@ -77,7 +77,7 @@ function editEmployee(id, name, email, role, skills) {
     document.getElementById("skills").value = skills;
     document.getElementById("employeeFormContainer").style.display = "block";
 }
-
+//function to delete employee
 function deleteEmployee(id) {
     if (confirm("Are you sure you want to delete this employee?")) {
         fetch(`http://localhost:9091/employees/${id}`, {
@@ -88,7 +88,7 @@ function deleteEmployee(id) {
         });
     }
 }
-
+//function for fetching the projects
 function fetchProjects() {
     fetch("http://localhost:9091/projects")
         .then(response => response.json())
@@ -115,17 +115,18 @@ function fetchProjects() {
             });
         });
 }
-
+//function to save project used in update , add new project
 function saveProject() {
     const id = document.getElementById("projectId").value;
     const project = {
         name: document.getElementById("projectName").value.trim(),
         requiredSkills: document.getElementById("requiredSkills").value.trim() ?
-            document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim()) : [] // If no skills are provided, send an empty array
+            document.getElementById("requiredSkills").value.split(",").map(skill => skill.trim()) : [],
+        completionTime: parseInt(document.getElementById("completionTime").value, 10) || null
     };
 
     const method = id ? "PUT" : "POST";
-    const url = id ? `http://localhost:9091/projects/update/${id}` : "http://localhost:9091/projects/add";
+    const url = id ? `http://localhost:9091/projects/update/${id}` : "http://localhost:9091/projects";
 
     fetch(url, {
             method: method,
@@ -136,13 +137,13 @@ function saveProject() {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Server error: ' + response.statusText);
+                throw new Error(`Server error: ${response.statusText}`);
             }
-            return response.json(); // Parse the JSON response
+            return response.json();
         })
         .then(data => {
-            alert(id ? "Project Updated" : "Project Added");
-            fetchProjects(); // Re-fetch the project list after adding/updating
+            alert(id ? "Project Updated Successfully!" : "Project Added Successfully!");
+            fetchProjects(); // Reload the project list
             document.getElementById("projectFormContainer").style.display = "none";
         })
         .catch(error => {
@@ -150,8 +151,7 @@ function saveProject() {
             alert("There was an error processing your request.");
         });
 }
-
-
+//used in update project
 function editProject(id, name, requiredSkills) {
     console.log("Edit Project Clicked:", id, name, requiredSkills); // Debugging line
 
@@ -161,19 +161,31 @@ function editProject(id, name, requiredSkills) {
     document.getElementById("projectId").value = id;
     document.getElementById("projectName").value = name;
     document.getElementById("requiredSkills").value = skillsArray.join(", ");
-
     document.getElementById("projectFormContainer").style.display = "block";
 }
-
-
+//function to delete the project
 function deleteProject(id) {
     if (confirm("Are you sure you want to delete this project?")) {
         fetch(`http://localhost:9091/projects/${id}`, {
-            method: "DELETE"
-        }).then(() => {
-            alert("Project Deleted");
-            fetchProjects();
-        });
+                method: "DELETE"
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error("Project not found!");
+                    }
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+                return response.text(); // Handle empty response
+            })
+            .then(() => {
+                alert("Project Deleted Successfully!");
+                fetchProjects(); // Refresh the project list
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to delete project. It may not exist or there was an issue.");
+            });
     }
 }
 
@@ -247,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
 document.addEventListener("DOMContentLoaded", function() {
     fetchLeaveRequests();
 });
-
+//function used for fetching leave request
 function fetchLeaveRequests() {
     fetch("http://localhost:9091/leaverequests")
         .then(response => response.json())
@@ -279,7 +291,7 @@ function fetchLeaveRequests() {
         })
         .catch(error => console.error("Error fetching leave requests:", error));
 }
-
+//update leave request with actions
 function updateLeaveStatus(id, action) {
     let url = `http://localhost:9091/leaverequests/${id}/${action}`;
 
@@ -308,7 +320,7 @@ function updateLeaveStatus(id, action) {
         fetchLeaveRequests();
     }).catch(error => console.error("Error updating leave:", error));
 }
-
+//update the employee availability based on leave request 
 function updateEmployeeAvailability(employeeId, availability) {
     fetch(`http://localhost:9091/employees/${employeeId}/availability`, {
         method: "PUT",
@@ -321,23 +333,6 @@ function updateEmployeeAvailability(employeeId, availability) {
     }).catch(error => console.error("Error updating employee availability:", error));
 }
 
-function saveLeaveRequest() {
-    const leave = {
-        employee_id: document.getElementById("leaveEmployeeId").value,
-        start_date: document.getElementById("leaveStartDate").value,
-        end_date: document.getElementById("leaveEndDate").value
-    };
-
-    fetch("http://localhost:9091/leaverequests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(leave)
-    }).then(() => {
-        alert("Leave Request Submitted");
-        fetchLeaveRequests();
-        document.getElementById("leaveFormContainer").style.display = "none";
-    }).catch(error => console.error("Error saving leave request:", error));
-}
 
 function populateLeaveRequestsTable(leaveRequests) {
     const tableBody = document.getElementById("leaveRequestsTableBody");
