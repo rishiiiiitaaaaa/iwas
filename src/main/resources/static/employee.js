@@ -24,6 +24,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const newAvailabilityInput = document.getElementById("newAvailability");
     const newSkillsInput = document.getElementById("newSkills");
 
+    //function that fetches all the data of employee 
     function fetchEmployeeData() {
         fetch(`http://localhost:9091/employees/email/${email}`)
             .then(response => response.json())
@@ -36,15 +37,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 empNameElem.textContent = data.name;
                 empEmailElem.textContent = data.email;
                 empRoleElem.textContent = data.role;
-                empAvailabilityElem.textContent = data.availability ? "Available" : "Unavailable";
+
+                // Fetch leave requests and check if any leave is active
+                fetchLeaveRequests().then(leaveActive => {
+                    empAvailabilityElem.textContent = leaveActive ? "Unavailable" : "Available";
+                });
+
                 empSkillsElem.textContent = data.skills.length ? data.skills.join(", ") : "None";
-
-                newNameInput.value = data.name;
-                newRoleInput.value = data.role;
-                newAvailabilityInput.value = data.availability ? "true" : "false";
-                newSkillsInput.value = data.skills ? data.skills.join(", ") : "";
-
-                fetchLeaveRequests();
             })
             .catch(error => {
                 console.error("Error fetching employee data:", error);
@@ -105,13 +104,24 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     });
 
+    //function that fetches leave request 
     function fetchLeaveRequests() {
-        fetch(`http://localhost:9091/leaverequests/employee/${employeeId}`)
+        return fetch(`http://localhost:9091/leaverequests/employee/${employeeId}`)
             .then(response => response.json())
             .then(data => {
                 const leaveTableBody = document.getElementById("leaveTableBody");
                 leaveTableBody.innerHTML = "";
+
+                let leaveActive = false;
+                const today = new Date();
+
                 data.forEach(request => {
+                    const endDate = new Date(request.endDate);
+
+                    if (request.status === "Approved" && endDate >= today) {
+                        leaveActive = true;
+                    }
+
                     const row = document.createElement("tr");
                     row.innerHTML = `
                         <td>${request.startDate}</td>
@@ -121,9 +131,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     `;
                     leaveTableBody.appendChild(row);
                 });
+
+                return leaveActive; // Return whether the employee is currently on leave
             })
-            .catch(error => console.error("Error fetching leave requests:", error));
+            .catch(error => {
+                console.error("Error fetching leave requests:", error);
+                return false; // If there's an error, assume leave is not active
+            });
     }
+
 
     document.getElementById("leaveForm").addEventListener("submit", function(event) {
         event.preventDefault();
