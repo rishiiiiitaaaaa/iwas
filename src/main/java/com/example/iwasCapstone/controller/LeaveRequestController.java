@@ -39,11 +39,17 @@ public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests() {
 
 //create a leave request 
     @PostMapping
-    public ResponseEntity<LeaveRequest> createLeaveRequest(@RequestBody LeaveRequest leaveRequest) {
+    public ResponseEntity<?> createLeaveRequest(@RequestBody LeaveRequest leaveRequest) {
+        System.out.println("Received Leave Request: " + leaveRequest);
+        
+        if (leaveRequest.getEmployee() == null || leaveRequest.getEmployee().getId() == null) {
+            return ResponseEntity.badRequest().body("Employee ID is missing.");
+        }
+    
         LeaveRequest savedLeaveRequest = leaveRequestRepository.save(leaveRequest);
         return ResponseEntity.ok(savedLeaveRequest);
     }
-
+    
 //get leave request by employee id 
     @GetMapping("/employee/{employee_id}")
     public ResponseEntity<List<LeaveRequest>> getLeaveRequestsByEmployee(@PathVariable("employee_id") Long employeeId) {
