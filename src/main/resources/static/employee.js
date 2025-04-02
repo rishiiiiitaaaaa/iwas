@@ -145,12 +145,13 @@ document.addEventListener("DOMContentLoaded", function() {
         event.preventDefault();
 
         const leaveRequest = {
-            employeeId: employeeId,
+            employee: { id: employeeId },
             startDate: document.getElementById("startDate").value,
             endDate: document.getElementById("endDate").value,
             description: document.getElementById("description").value,
-            status: "Pending"
+            status: "PENDING"
         };
+
 
         fetch(`http://localhost:9091/leaverequests`, {
                 method: "POST",
