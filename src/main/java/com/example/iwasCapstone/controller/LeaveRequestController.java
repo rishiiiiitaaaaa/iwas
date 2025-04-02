@@ -79,26 +79,27 @@ public ResponseEntity<LeaveRequest> updateLeaveRequestStatus(@PathVariable Long 
         return ResponseEntity.notFound().build();
     }
    //approaval of leave request
-    @PutMapping("/{id}/approve")
-    public ResponseEntity<LeaveRequest> approveLeaveRequest(@PathVariable Long id) {
-        Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(id);
+   @PutMapping("/{id}/approve")
+public ResponseEntity<LeaveRequest> approveLeaveRequest(@PathVariable Long id) {
+    Optional<LeaveRequest> leaveRequestOpt = leaveRequestRepository.findById(id);
 
-        if (leaveRequest.isPresent()) {
-            LeaveRequest updatedLeaveRequest = leaveRequest.get();
-            updatedLeaveRequest.setStatus(LeaveStatus.APPROVED);
-            leaveRequestRepository.save(updatedLeaveRequest);
+    if (leaveRequestOpt.isPresent()) {
+        LeaveRequest leaveRequest = leaveRequestOpt.get();
+        leaveRequest.setStatus(LeaveStatus.APPROVED);
+        leaveRequestRepository.save(leaveRequest);
 
-            // Mark Employee as Unavailable
-            Optional<Employee> employee = employeeRepository.findById(updatedLeaveRequest.getId());
-            employee.ifPresent(emp -> {
-                emp.setAvailability(false);
-                employeeRepository.save(emp);
-            });
-
-            return ResponseEntity.ok(updatedLeaveRequest);
+        // Mark Employee as Unavailable
+        Optional<Employee> employeeOpt = employeeRepository.findById(leaveRequest.getId());
+        if (employeeOpt.isPresent()) {
+            Employee emp = employeeOpt.get();
+            emp.setAvailability(false); // Set Unavailable during leave
+            employeeRepository.save(emp);
         }
-        return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(leaveRequest);
     }
+    return ResponseEntity.notFound().build();
+}
 
     //  Reject Leave Request 
     @PutMapping("/{id}/reject")
