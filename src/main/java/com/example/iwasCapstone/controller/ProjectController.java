@@ -56,7 +56,7 @@ public ResponseEntity<Project> addProject(@RequestBody Project project) {
     }
 
 
-   // Update project
+   // Update project api
     @PutMapping("/update/{id}")
     public ResponseEntity<Project> updateProject(@PathVariable Long id, @RequestBody Project projectDetails) {
         return projectRepository.findById(id).map(project -> {
@@ -67,15 +67,20 @@ public ResponseEntity<Project> addProject(@RequestBody Project project) {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete project
+    // Delete project api 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        if (projectRepository.existsById(id)) {
-            projectRepository.deleteById(id);
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+public ResponseEntity<String> deleteProject(@PathVariable Long id) {
+    if (!projectRepository.existsById(id)) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Project not found");
     }
+
+    try {
+        projectRepository.deleteById(id);
+        return ResponseEntity.ok("Project deleted successfully");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+    }
+}
+
 }
 
