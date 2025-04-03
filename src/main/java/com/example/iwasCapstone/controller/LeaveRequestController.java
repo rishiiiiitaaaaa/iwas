@@ -3,7 +3,7 @@ package com.example.iwasCapstone.controller;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,22 +72,36 @@ public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests() {
     }
     //update the status of leave request 
 @PutMapping("/{id}")
-public ResponseEntity<LeaveRequest> updateLeaveRequestStatus(@PathVariable Long id, @RequestBody String status) {
+public ResponseEntity<?> updateLeaveRequestStatus(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
+    // Debugging: Log received request
+    System.out.println("Received PUT request for LeaveRequest ID: " + id);
+    System.out.println("Received Body: " + requestBody);
+
+    // Validate Request Body
+    if (requestBody == null || !requestBody.containsKey("status")) {
+        return ResponseEntity.badRequest().body("Missing 'status' in request body");
+    }
+
+    String status = requestBody.get("status").toUpperCase(); // Convert to uppercase
+
     Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(id);
     if (leaveRequest.isPresent()) {
         LeaveRequest updatedLeaveRequest = leaveRequest.get();
 
         try {
-            LeaveStatus leaveStatus = LeaveStatus.valueOf(status); // Convert String to Enum 
+            LeaveStatus leaveStatus = LeaveStatus.valueOf(status); // Convert String to Enum to match the storage with leavestatus entity
             updatedLeaveRequest.setStatus(leaveStatus);
             leaveRequestRepository.save(updatedLeaveRequest);
+
             return ResponseEntity.ok(updatedLeaveRequest);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null); // Invalid status string
+            return ResponseEntity.badRequest().body("Invalid status value. Must be 'APPROVED' or 'REJECTED'.");
         }
     }
     return ResponseEntity.notFound().build();
 }
+
+
   //leave approve api 
 @RequestMapping("/approve/{id}")
 public ResponseEntity<String> approveLeave(@PathVariable Long id) {
