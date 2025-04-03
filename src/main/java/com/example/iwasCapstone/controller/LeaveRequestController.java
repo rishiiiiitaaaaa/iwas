@@ -1,5 +1,6 @@
 package com.example.iwasCapstone.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,19 @@ import lombok.RequiredArgsConstructor;
 public class LeaveRequestController {
     private final EmployeeRepository employeeRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    //function created for fixing availability of employee with leave status
+    public boolean checkEmployeeLeaveStatus(Long employeeId) {
+        LocalDate today = LocalDate.now();
+    
+        // Find active leave requests that overlap with today
+        List<LeaveRequest> approvedLeaves = leaveRequestRepository
+            .findByEmployeeIdAndStatusAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                employeeId, LeaveStatus.APPROVED, today, today);
+    
+        return !approvedLeaves.isEmpty();  // If list is not empty, employee is on leave
+    }
+    
+
     //get all leave request 
     @GetMapping
 public ResponseEntity<List<LeaveRequest>> getAllLeaveRequests() {
@@ -64,7 +78,7 @@ public ResponseEntity<LeaveRequest> updateLeaveRequestStatus(@PathVariable Long 
         LeaveRequest updatedLeaveRequest = leaveRequest.get();
 
         try {
-            LeaveStatus leaveStatus = LeaveStatus.valueOf(status); // Convert String to Enum ✅
+            LeaveStatus leaveStatus = LeaveStatus.valueOf(status); // Convert String to Enum 
             updatedLeaveRequest.setStatus(leaveStatus);
             leaveRequestRepository.save(updatedLeaveRequest);
             return ResponseEntity.ok(updatedLeaveRequest);
@@ -74,58 +88,43 @@ public ResponseEntity<LeaveRequest> updateLeaveRequestStatus(@PathVariable Long 
     }
     return ResponseEntity.notFound().build();
 }
-
-//delte the leave request 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteLeaveRequest(@PathVariable Long id) {
-        if (leaveRequestRepository.existsById(id)) {
-            leaveRequestRepository.deleteById(id);
-            return ResponseEntity.ok("Leave request deleted successfully.");
-        }
+  //leave approve api 
+@RequestMapping("/approve/{id}")
+public ResponseEntity<String> approveLeave(@PathVariable Long id) {
+    LeaveRequest leaveRequest = leaveRequestRepository.findById(id).orElse(null);
+    if (leaveRequest == null) {
         return ResponseEntity.notFound().build();
     }
-   //approaval of leave request
-   @PutMapping("/{id}/approve")
-public ResponseEntity<LeaveRequest> approveLeaveRequest(@PathVariable Long id) {
-    Optional<LeaveRequest> leaveRequestOpt = leaveRequestRepository.findById(id);
 
-    if (leaveRequestOpt.isPresent()) {
-        LeaveRequest leaveRequest = leaveRequestOpt.get();
-        leaveRequest.setStatus(LeaveStatus.APPROVED);
-        leaveRequestRepository.save(leaveRequest);
+    leaveRequest.setStatus(LeaveStatus.APPROVED);
+    leaveRequestRepository.save(leaveRequest);
 
-        // Mark Employee as Unavailable
-        Optional<Employee> employeeOpt = employeeRepository.findById(leaveRequest.getId());
-        if (employeeOpt.isPresent()) {
-            Employee emp = employeeOpt.get();
-            emp.setAvailability(false); // Set Unavailable during leave
-            employeeRepository.save(emp);
-        }
+    // Update employee availability immediately
+    Employee employee = leaveRequest.getEmployee();
+    boolean isOnLeave = checkEmployeeLeaveStatus(employee.getId());
+    employee.setAvailability(!isOnLeave);  // If on leave → false, else true
+    employeeRepository.save(employee);
 
-        return ResponseEntity.ok(leaveRequest);
+    return ResponseEntity.ok("Leave Approved and Availability Updated");
+}
+// leave reject api
+@RequestMapping("/reject/{id}")
+public ResponseEntity<String> rejectLeave(@PathVariable Long id) {
+    LeaveRequest leaveRequest = leaveRequestRepository.findById(id).orElse(null);
+    if (leaveRequest == null) {
+        return ResponseEntity.notFound().build();
     }
-    return ResponseEntity.notFound().build();
+
+    leaveRequest.setStatus(LeaveStatus.REJECTED);
+    leaveRequestRepository.save(leaveRequest);
+
+    // Update employee availability (mark as available if no other approved leaves exist)
+    Employee employee = leaveRequest.getEmployee();
+    boolean isOnLeave = checkEmployeeLeaveStatus(employee.getId());
+    employee.setAvailability(!isOnLeave);
+    employeeRepository.save(employee);
+
+    return ResponseEntity.ok("Leave Rejected and Employee Marked as Available");
 }
 
-    //  Reject Leave Request 
-    @PutMapping("/{id}/reject")
-    public ResponseEntity<LeaveRequest> rejectLeaveRequest(@PathVariable Long id) {
-        Optional<LeaveRequest> leaveRequest = leaveRequestRepository.findById(id);
-
-        if (leaveRequest.isPresent()) {
-            LeaveRequest updatedLeaveRequest = leaveRequest.get();
-            updatedLeaveRequest.setStatus(LeaveStatus.REJECTED);
-            leaveRequestRepository.save(updatedLeaveRequest);
-
-            // Ensure Employee Availability remains True
-            Optional<Employee> employee = employeeRepository.findById(updatedLeaveRequest.getId());
-            employee.ifPresent(emp -> {
-                emp.setAvailability(true);
-                employeeRepository.save(emp);
-            });
-
-            return ResponseEntity.ok(updatedLeaveRequest);
-        }
-        return ResponseEntity.notFound().build();
-    }
 }
