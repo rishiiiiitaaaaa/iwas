@@ -3,7 +3,7 @@ package com.example.iwasCapstone.controller;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +26,26 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Employee employee) {
+        if (employee.getName() == null || employee.getEmail() == null || employee.getPassword() == null || employee.getRole() == null) {
+            return ResponseEntity.badRequest().body("All fields (name, email, password, role) are required!");
+        }
+    
         if (employeeRepository.findByEmail(employee.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email already in use");
         }
-        employeeRepository.save(employee);
-        return ResponseEntity.ok("User registered successfully");
+    
+        if (employee.getSkills() == null) {
+            employee.setSkills(List.of());  //  Set an empty list instead of null
+        }
+    
+        try {
+            employeeRepository.save(employee);
+            return ResponseEntity.ok("User registered successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
-
+    
     
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Employee employee) {
