@@ -35,24 +35,39 @@ async function registerUser(event) {
     const name = document.getElementById("name").value;
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const role = document.getElementById("role").value;
+    const skillsInput = document.getElementById("skill").value.trim();
+    const skills = skillsInput ? skillsInput.split(",").map(skill => skill.trim()) : [];
 
-    const response = await fetch(`${BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-    });
 
-    const result = await response.text();
+    if (!name || !email || !password || !confirmPassword || !role) {
+        alert("All fields are required!");
+        return;
+    }
 
-    if (response.ok) {
-        alert("User Registered Successfully!");
+    if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
 
-        // Redirect to login page after 1.5 seconds
-        setTimeout(() => {
-            window.location.href = "loginCap.html";
-        }, 1500);
-    } else {
-        alert("Registration Failed: " + result);
+    try {
+        const response = await fetch(`${BASE_URL}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, password, role, skills }), //  Send as array
+        });
+
+        const result = await response.text();
+
+        if (response.ok) {
+            alert("User Registered Successfully!");
+            setTimeout(() => { window.location.href = "loginCap.html"; }, 1000);
+        } else {
+            alert("Registration Failed: " + result);
+        }
+    } catch (error) {
+        alert("An error occurred: " + error.message);
     }
 }
 
