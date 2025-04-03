@@ -1,13 +1,15 @@
+// Wait for the DOM content to fully load before executing the script
 document.addEventListener("DOMContentLoaded", function() {
     const email = localStorage.getItem("email");
+    // If no email is found, redirect the user to the login page
     if (!email) {
         alert("No user logged in. Redirecting to login page.");
         window.location.href = "loginCap.html";
         return;
     }
 
-    let employeeId = null;
-
+    let employeeId = null; //variable to store employee id
+    //ref to employee values
     const empNameElem = document.getElementById("empName");
     const empEmailElem = document.getElementById("empEmail");
     const empRoleElem = document.getElementById("empRole");
@@ -53,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     fetchEmployeeData();
 
-
+    //used for editing employee details
     editProfileBtn.addEventListener("click", function() {
         editProfileModal.style.display = "block";
     });
@@ -61,7 +63,7 @@ document.addEventListener("DOMContentLoaded", function() {
     closeModal.addEventListener("click", function() {
         editProfileModal.style.display = "none";
     });
-
+    //used in saving the changes
     saveChangesBtn.addEventListener("click", function(event) {
         event.preventDefault();
 
@@ -103,22 +105,44 @@ document.addEventListener("DOMContentLoaded", function() {
                 alert("Error updating profile. Check console for details.");
             });
     });
-
-    //function that fetches leave request 
+    //function for fetching leave request of employee 
     function fetchLeaveRequests() {
+        employeeId = localStorage.getItem("employee_id"); // Ensure employeeId is retrieved
+        if (!employeeId) {
+            console.error("Error: Employee ID is missing!"); //used for debugging through console
+            return Promise.resolve(false);
+        }
+
+
         return fetch(`http://localhost:9091/leaverequests/employee/${employeeId}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log(" Leave Requests API Response:", data);
+
                 const leaveTableBody = document.getElementById("leaveTableBody");
-                leaveTableBody.innerHTML = "";
+                leaveTableBody.innerHTML = ""; // Clear previous data
 
                 let leaveActive = false;
                 const today = new Date();
+                today.setHours(0, 0, 0, 0); // Remove time component
 
                 data.forEach(request => {
+                    const startDate = new Date(request.startDate);
                     const endDate = new Date(request.endDate);
 
-                    if (request.status === "Approved" && endDate >= today) {
+                    //  Normalize dates (remove time part)
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate.setHours(23, 59, 59, 999);
+
+                    console.log(` Checking leave: ${startDate.toDateString()} - ${endDate.toDateString()}, Status: ${request.status}`);
+
+                    // LOGIC for Checking if today falls inside an approved leave period
+                    if (request.status === "APPROVED" && today >= startDate && today <= endDate) {
                         leaveActive = true;
                     }
 
@@ -132,39 +156,62 @@ document.addEventListener("DOMContentLoaded", function() {
                     leaveTableBody.appendChild(row);
                 });
 
-                return leaveActive; // Return whether the employee is currently on leave
+                console.log(" FINAL leaveActive value:", leaveActive);
+
+                //  Update Availability Text Correctly
+                empAvailabilityElem.textContent = leaveActive ? "Unavailable" : "Available";
+
+                return leaveActive;
             })
             .catch(error => {
-                console.error("Error fetching leave requests:", error);
-                return false; // If there's an error, assume leave is not active
+                console.error(" Error fetching leave requests:", error);
+                empAvailabilityElem.textContent = "Available"; // Default to available if error
+                return false;
             });
     }
-
-
+    // viewing leave form for applying for leave
     document.getElementById("leaveForm").addEventListener("submit", function(event) {
         event.preventDefault();
 
+        employeeId = localStorage.getItem("employee_id"); // Ensure employeeId is retrieved before sending request
+        if (!employeeId) {
+            alert(" Error: Employee ID is missing!");
+            return;
+        }
+
         const leaveRequest = {
-            employee: { id: employeeId },
+            employee: { id: employeeId }, // Correct structure for backend
             startDate: document.getElementById("startDate").value,
             endDate: document.getElementById("endDate").value,
             description: document.getElementById("description").value,
             status: "PENDING"
         };
 
+        console.log(" Sending Leave Request:", leaveRequest);
 
         fetch(`http://localhost:9091/leaverequests`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(leaveRequest)
             })
-            .then(response => response.json())
-            .then(() => {
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(`Error ${response.status}: ${text}`); });
+                }
+                return response.json();
+            })
+            .then(data => {
                 alert("Leave request submitted successfully!");
+                console.log("Leave Request API Response:", data);
                 document.getElementById("leaveForm").reset();
+
+                // Refresh leave requests and update availability after submitting
                 fetchLeaveRequests();
             })
-            .catch(error => console.error("Error applying for leave:", error));
+            .catch(error => {
+                console.error("Error applying for leave:", error);
+                alert(" Error submitting leave request. Check console for details.");
+            });
     });
 });
 
