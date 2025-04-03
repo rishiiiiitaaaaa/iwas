@@ -292,34 +292,39 @@ function fetchLeaveRequests() {
         .catch(error => console.error("Error fetching leave requests:", error));
 }
 //update leave request with actions
+
 function updateLeaveStatus(id, action) {
-    let url = `http://localhost:9091/leaverequests/${id}/${action}`;
+    let url = `http://localhost:9091/leaverequests/${id}`;
+    let statusValue = action.toUpperCase() === "APPROVE" ? "APPROVED" : "REJECTED"; // Ensure correct format
+
+    let requestData = JSON.stringify({ status: statusValue });
+
+    // Debugging logs
+    console.log("Sending request to:", url);
+    console.log("Request body:", requestData);
 
     fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" }
-    }).then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            throw new Error("Failed to update leave status");
-        }
-    }).then(updatedLeave => {
-        alert(`Leave ${action}d successfully`);
-
-        if (updatedLeave && updatedLeave.employee_id) {
-            if (action === "approve") {
-                updateEmployeeAvailability(updatedLeave.employee_id, false);
-            } else if (action === "reject") {
-                updateEmployeeAvailability(updatedLeave.employee_id, true);
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: requestData
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(`Failed: ${text}`); });
             }
-        } else {
-            console.error("Error: Employee ID missing in response", updatedLeave);
-        }
+            return response.json();
+        })
+        .then(updatedLeave => {
+            alert(`Leave ${action.toLowerCase()}d successfully`);
+            console.log("Updated Leave Response:", updatedLeave);
 
-        fetchLeaveRequests();
-    }).catch(error => console.error("Error updating leave:", error));
+            //  Refresh the leave requests table to show the updated status
+            fetchLeaveRequests();
+        })
+        .catch(error => console.error("Error updating leave:", error));
 }
+
+
 //update the employee availability based on leave request 
 function updateEmployeeAvailability(employeeId, availability) {
     fetch(`http://localhost:9091/employees/${employeeId}/availability`, {
@@ -333,7 +338,7 @@ function updateEmployeeAvailability(employeeId, availability) {
     }).catch(error => console.error("Error updating employee availability:", error));
 }
 
-
+//to display data in table 
 function populateLeaveRequestsTable(leaveRequests) {
     const tableBody = document.getElementById("leaveRequestsTableBody");
     tableBody.innerHTML = ""; // Clear existing rows
