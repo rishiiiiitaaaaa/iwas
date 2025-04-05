@@ -24,12 +24,12 @@
         </div>
     </nav>
 
-
     <section id="home">
         <div class="welcome-container">
-            <h1>WELCOME, <span id="adminName">Admin</span></h1>
+            <h1 class="typing-text">Welcome Admin</h1>
         </div>
     </section>
+
 
     <section id="employees">
         <div class="card">
@@ -66,10 +66,13 @@
         <div class="card">
             <h2>Manage Projects</h2>
             <button id="showProjectFormButton">Add Project</button>
+
             <div id="projectFormContainer" style="display: none;">
                 <input type="hidden" id="projectId">
                 <input type="text" id="projectName" placeholder="Project Name">
                 <input type="text" id="requiredSkills" placeholder="Required Skills (comma-separated)">
+                <input type="number" id="completionTime" placeholder="Completion Time (Days)">
+
                 <button id="saveProjectButton">Save</button>
             </div>
             <h3>Project List</h3>
