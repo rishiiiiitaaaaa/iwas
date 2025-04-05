@@ -1,23 +1,28 @@
 /* General Styles */
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f1f1f1;
+    background-color: #f9fafb;
+    color: #333;
 }
 
 
 /* Navbar */
 
 .navbar {
-    background-color: #333;
+    background-color: #0077cc;
     color: white;
-    padding: 10px 0;
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    z-index: 400;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .navbar-container {
-    width: 80%;
+    width: 85%;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
@@ -25,14 +30,8 @@ body {
 }
 
 .navbar-links {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
     display: flex;
-    align-items: center;
-    /* Ensure vertical alignment */
     gap: 20px;
-    /* Add spacing */
 }
 
 nav ul {
@@ -53,46 +52,69 @@ nav ul li a {
     color: white;
     font-size: 16px;
     padding: 10px 15px;
+    transition: background 0.3s ease;
+}
+
+nav ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
 }
 
 .logout-btn {
-    background-color: red;
+    background-color: #ff4d4d;
     color: white;
     border: none;
     padding: 8px 16px;
     cursor: pointer;
     border-radius: 5px;
     font-size: 16px;
+    transition: background 0.3s ease;
 }
 
-.navbar-links li a:hover {
-    text-decoration: underline;
-}
-
-
-/* 🛠 Fix Logout Button Position */
-
-.navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    /* Space between nav items and logout */
+.logout-btn:hover {
+    background-color: #e60000;
 }
 
 
-/* Welcome Section */
+/* Welcome Section with Typing Effect */
 
 #home {
-    background: #2c3e50;
-    color: white;
-    text-align: center;
-    font-size: 40px;
-    padding: 230px 20px;
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: linear-gradient(120deg, #a1c4fd, #c2e9fb);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    margin: 0;
+    scroll-margin-top: 160px;
 }
 
-#home h1 {
-    margin: 0;
+.typing-text {
+    font-size: 48px;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 3px solid #333;
+    width: 0;
+    animation: typing 3s steps(20, end) forwards, blink 0.6s step-end infinite;
+    color: #1f1f1f;
+    font-weight: bold;
+}
+
+@keyframes typing {
+    from {
+        width: 0
+    }
+    to {
+        width: 14ch
+    }
+}
+
+@keyframes blink {
+    50% {
+        border-color: transparent
+    }
 }
 
 .welcome-container {
@@ -112,6 +134,7 @@ nav ul li a {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 90%;
     transition: all 0.3s ease;
+    scroll-margin-top: 160px;
 }
 
 .card:hover {
@@ -120,7 +143,7 @@ nav ul li a {
 }
 
 button {
-    background-color: #3498db;
+    background-color: #007bff;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -132,7 +155,7 @@ button {
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0056b3;
 }
 
 
@@ -188,4 +211,14 @@ td {
     table td {
         font-size: 14px;
     }
+}
+
+
+/* Fix anchor scroll offset for all sections */
+
+#home,
+#employee-section,
+#project-section,
+#leave-section {
+    scroll-margin-top: 160px;
 }
